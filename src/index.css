@@ -6,6 +6,57 @@
 
 @layer base {
   :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+
+    --card: 0 0% 97%;
+    --card-foreground: 240 10% 3.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+
+    --primary: 35 100% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 5% 92%;
+    --secondary-foreground: 240 10% 20%;
+
+    --muted: 240 5% 90%;
+    --muted-foreground: 240 5% 40%;
+
+    --accent: 35 100% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 240 5% 85%;
+    --input: 240 5% 85%;
+    --ring: 35 100% 55%;
+
+    --radius: 0.75rem;
+
+    --font-heading: 'Instrument Serif', serif;
+    --font-body: 'Inter', sans-serif;
+
+    --badge-hiring: 25 95% 53%;
+    --badge-active: 142 70% 45%;
+    --badge-new: 217 91% 60%;
+
+    --gradient-card: linear-gradient(135deg, hsl(0 0% 98%) 0%, hsl(0 0% 95%) 100%);
+    --gradient-glow: radial-gradient(ellipse at center, hsl(35 100% 55% / 0.1) 0%, transparent 70%);
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 10% 3.9%;
+    --sidebar-primary: 35 100% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 5% 92%;
+    --sidebar-accent-foreground: 240 10% 3.9%;
+    --sidebar-border: 240 5% 85%;
+    --sidebar-ring: 35 100% 55%;
+  }
+
+  .dark {
     --background: 240 10% 3.9%;
     --foreground: 45 30% 94%;
 
@@ -33,15 +84,6 @@
     --border: 240 5% 18%;
     --input: 240 5% 18%;
     --ring: 35 100% 55%;
-
-    --radius: 0.75rem;
-
-    --font-heading: 'Instrument Serif', serif;
-    --font-body: 'Inter', sans-serif;
-
-    --badge-hiring: 25 95% 53%;
-    --badge-active: 142 70% 45%;
-    --badge-new: 217 91% 60%;
 
     --gradient-card: linear-gradient(135deg, hsl(240 6% 12%) 0%, hsl(240 6% 8%) 100%);
     --gradient-glow: radial-gradient(ellipse at center, hsl(35 100% 55% / 0.15) 0%, transparent 70%);
