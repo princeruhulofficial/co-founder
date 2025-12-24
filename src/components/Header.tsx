@@ -1,0 +1,55 @@
+import { Search, Plus, Sparkles } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useState } from 'react';
+
+export function Header() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/profiles?search=${encodeURIComponent(searchQuery)}`);
+    }
+  };
+
+  return (
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl">
+      <div className="container flex h-16 items-center justify-between gap-4">
+        <Link to="/" className="flex items-center gap-2">
+          <Sparkles className="h-5 w-5 text-primary" />
+          <span className="font-heading text-xl text-foreground">CoFoundr</span>
+        </Link>
+
+        <form onSubmit={handleSearch} className="hidden flex-1 max-w-md mx-8 md:block">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Search founders, developers, skills..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 bg-secondary/50 border-border/50 focus:border-primary/50 focus:ring-primary/20"
+            />
+          </div>
+        </form>
+
+        <div className="flex items-center gap-3">
+          <Link to="/profiles" className="hidden sm:block">
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+              Browse
+            </Button>
+          </Link>
+          <Link to="/add-profile">
+            <Button size="sm" className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90">
+              <Plus className="h-4 w-4" />
+              <span className="hidden sm:inline">Add Profile</span>
+            </Button>
+          </Link>
+        </div>
+      </div>
+    </header>
+  );
+}

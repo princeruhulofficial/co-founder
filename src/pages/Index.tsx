@@ -1,12 +1,43 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useMemo } from 'react';
+import { Header } from '@/components/Header';
+import { Hero } from '@/components/Hero';
+import { HorizontalScroller } from '@/components/HorizontalScroller';
+import { Leaderboard } from '@/components/Leaderboard';
+import { CategorySection } from '@/components/CategorySection';
+import { Footer } from '@/components/Footer';
+import { getProfiles } from '@/lib/data';
 
 const Index = () => {
+  const profiles = useMemo(() => getProfiles(), []);
+  
+  const hiringCoFounders = profiles.filter(p => p.type === 'founder').slice(0, 6);
+  const topDevelopers = profiles.filter(p => p.type === 'developer').slice(0, 6);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-background">
+      <Header />
+      
+      <main className="container">
+        <Hero />
+        
+        <HorizontalScroller
+          title="Recently hiring co-founders"
+          profiles={hiringCoFounders}
+          linkTo="/profiles?type=founder"
+        />
+
+        <HorizontalScroller
+          title="Top developers this week"
+          profiles={topDevelopers}
+          linkTo="/profiles?type=developer"
+        />
+
+        <Leaderboard profiles={profiles} />
+
+        <CategorySection />
+      </main>
+
+      <Footer />
     </div>
   );
 };
