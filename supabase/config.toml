@@ -1,1 +1,7 @@
 project_id = "nmodpjhzxiqrwqqeetyd"
+
+[functions.verify-edit-access]
+verify_jwt = false
+
+[functions.update-profile]
+verify_jwt = false

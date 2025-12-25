@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import { saveProfile, categories, Profile } from '@/lib/data';
+import { categories } from '@/lib/data';
+import { createProfile } from '@/lib/database';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import {
   Select,
   SelectContent,
@@ -14,21 +16,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Upload, X, User, Briefcase, Code } from 'lucide-react';
+import { Upload, X, Briefcase, Code, Loader2, Info } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const AddProfile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [profileType, setProfileType] = useState<'founder' | 'developer' | null>(null);
   const [avatar, setAvatar] = useState<string>('');
   const [name, setName] = useState('');
   const [tagline, setTagline] = useState('');
-  const [building, setBuilding] = useState('');
-  const [lookingFor, setLookingFor] = useState('');
   const [contactType, setContactType] = useState<'email' | 'twitter' | 'linkedin'>('email');
   const [contact, setContact] = useState('');
+  const [backupEmail, setBackupEmail] = useState('');
   const [category, setCategory] = useState('saas');
   
   // Founder specific
@@ -36,6 +38,7 @@ const AddProfile = () => {
   const [projectDescription, setProjectDescription] = useState('');
   const [hiringType, setHiringType] = useState('Technical Co-founder');
   const [developerNeeds, setDeveloperNeeds] = useState('');
+  const [isHiring, setIsHiring] = useState(true);
   
   // Developer specific
   const [skills, setSkills] = useState('');
@@ -52,53 +55,64 @@ const AddProfile = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!profileType || !name || !tagline || !building || !lookingFor || !contact) {
+    if (!profileType || !name || !tagline || !contact || !backupEmail) {
       toast({
         title: "Missing required fields",
-        description: "Please fill in all required fields.",
+        description: "Please fill in all required fields including backup email.",
         variant: "destructive",
       });
       return;
     }
 
-    const newProfile: Profile = {
-      id: Date.now().toString(),
-      type: profileType,
-      name,
-      avatar: avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`,
-      tagline,
-      building,
-      lookingFor,
-      contactType,
-      contact,
-      category,
-      views: 0,
-      interests: 0,
-      joinedAt: 'Today',
-      lastActive: 'Just now',
-      ...(profileType === 'founder' && {
-        projectName,
-        projectDescription,
-        hiringType,
-        developerNeeds: developerNeeds.split(',').map(s => s.trim()).filter(Boolean),
-      }),
-      ...(profileType === 'developer' && {
-        skills: skills.split(',').map(s => s.trim()).filter(Boolean),
-        preferredProjectType,
-      }),
-    };
+    // Validate email format for backup email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(backupEmail)) {
+      toast({
+        title: "Invalid backup email",
+        description: "Please enter a valid email address for backup email.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    saveProfile(newProfile);
-    
-    toast({
-      title: "Profile created!",
-      description: "Your profile is now live.",
+    setIsSubmitting(true);
+
+    const newProfile = await createProfile({
+      name,
+      tagline,
+      avatar: avatar || undefined,
+      type: profileType,
+      category,
+      contact,
+      contactType,
+      backupEmail,
+      projectName: profileType === 'founder' ? projectName : undefined,
+      projectDescription: profileType === 'founder' ? projectDescription : undefined,
+      hiringType: profileType === 'founder' ? hiringType : undefined,
+      skillsNeeded: profileType === 'founder' ? developerNeeds.split(',').map(s => s.trim()).filter(Boolean) : undefined,
+      skills: profileType === 'developer' ? skills.split(',').map(s => s.trim()).filter(Boolean) : undefined,
+      preferredProjectType: profileType === 'developer' ? preferredProjectType : undefined,
+      isHiring: profileType === 'founder' ? isHiring : false,
     });
-    
-    navigate(`/profile/${newProfile.id}`);
+
+    setIsSubmitting(false);
+
+    if (newProfile) {
+      toast({
+        title: "Profile created!",
+        description: "Your profile is now live.",
+      });
+      navigate(`/profile/${newProfile.id}`);
+    } else {
+      toast({
+        title: "Error",
+        description: "Failed to create profile. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -228,30 +242,6 @@ const AddProfile = () => {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="building">What are you building/working on? *</Label>
-              <Textarea
-                id="building"
-                value={building}
-                onChange={(e) => setBuilding(e.target.value)}
-                placeholder="Describe what you're currently working on..."
-                rows={3}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="lookingFor">What are you looking for? *</Label>
-              <Textarea
-                id="lookingFor"
-                value={lookingFor}
-                onChange={(e) => setLookingFor(e.target.value)}
-                placeholder="Describe your ideal co-founder or opportunity..."
-                rows={3}
-                required
-              />
-            </div>
-
             {/* Founder specific fields */}
             {profileType === 'founder' && (
               <>
@@ -300,6 +290,20 @@ const AddProfile = () => {
                     placeholder="React, Node.js, PostgreSQL, AWS"
                   />
                 </div>
+
+                <div className="flex items-center justify-between p-4 rounded-lg bg-secondary/50">
+                  <div>
+                    <Label htmlFor="isHiring" className="text-base">Hiring Co-founder</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Get featured in "Recently hiring" section
+                    </p>
+                  </div>
+                  <Switch
+                    id="isHiring"
+                    checked={isHiring}
+                    onCheckedChange={setIsHiring}
+                  />
+                </div>
               </>
             )}
 
@@ -333,7 +337,7 @@ const AddProfile = () => {
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="contactType">Contact Type *</Label>
-                <Select value={contactType} onValueChange={(v) => setContactType(v as any)}>
+                <Select value={contactType} onValueChange={(v) => setContactType(v as 'email' | 'twitter' | 'linkedin')}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -345,7 +349,7 @@ const AddProfile = () => {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="contact">Contact *</Label>
+                <Label htmlFor="contact">Public Contact *</Label>
                 <Input
                   id="contact"
                   value={contact}
@@ -360,8 +364,34 @@ const AddProfile = () => {
               </div>
             </div>
 
-            <Button type="submit" size="lg" className="w-full">
-              Create Profile
+            {/* Backup Email */}
+            <div className="space-y-2">
+              <Label htmlFor="backupEmail" className="flex items-center gap-2">
+                Backup Email (Private) *
+                <Info className="h-4 w-4 text-muted-foreground" />
+              </Label>
+              <Input
+                id="backupEmail"
+                type="email"
+                value={backupEmail}
+                onChange={(e) => setBackupEmail(e.target.value)}
+                placeholder="your-backup@email.com"
+                required
+              />
+              <p className="text-xs text-muted-foreground">
+                This email is private and never shown publicly. Use it to verify and edit your profile later.
+              </p>
+            </div>
+
+            <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                'Create Profile'
+              )}
             </Button>
           </form>
         )}
