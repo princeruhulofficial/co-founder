@@ -14,13 +14,85 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          avatar: string | null
+          backup_email: string
+          category: string
+          contact: string
+          contact_type: string
+          created_at: string
+          hiring_type: string | null
+          id: string
+          interests: number
+          is_featured: boolean
+          is_hiring: boolean
+          name: string
+          preferred_project_type: string | null
+          project_description: string | null
+          project_name: string | null
+          skills: string[] | null
+          skills_needed: string[] | null
+          tagline: string | null
+          type: string
+          updated_at: string
+          views: number
+        }
+        Insert: {
+          avatar?: string | null
+          backup_email: string
+          category: string
+          contact: string
+          contact_type: string
+          created_at?: string
+          hiring_type?: string | null
+          id?: string
+          interests?: number
+          is_featured?: boolean
+          is_hiring?: boolean
+          name: string
+          preferred_project_type?: string | null
+          project_description?: string | null
+          project_name?: string | null
+          skills?: string[] | null
+          skills_needed?: string[] | null
+          tagline?: string | null
+          type: string
+          updated_at?: string
+          views?: number
+        }
+        Update: {
+          avatar?: string | null
+          backup_email?: string
+          category?: string
+          contact?: string
+          contact_type?: string
+          created_at?: string
+          hiring_type?: string | null
+          id?: string
+          interests?: number
+          is_featured?: boolean
+          is_hiring?: boolean
+          name?: string
+          preferred_project_type?: string | null
+          project_description?: string | null
+          project_name?: string | null
+          skills?: string[] | null
+          skills_needed?: string[] | null
+          tagline?: string | null
+          type?: string
+          updated_at?: string
+          views?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_interests: { Args: { profile_id: string }; Returns: undefined }
+      increment_views: { Args: { profile_id: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

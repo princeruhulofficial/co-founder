@@ -1,36 +1,52 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { HiringBadge } from '@/components/HiringBadge';
-import { getProfiles, incrementViews, incrementInterests, Profile } from '@/lib/data';
+import { EditProfileModal } from '@/components/EditProfileModal';
+import { 
+  Profile, 
+  fetchProfileById, 
+  incrementProfileViews, 
+  incrementProfileInterests 
+} from '@/lib/database';
 import { Button } from '@/components/ui/button';
 import { 
   Eye, Heart, ArrowLeft, Mail, Twitter, Linkedin, 
-  ExternalLink, Sparkles, Calendar, Clock 
+  ExternalLink, Sparkles, Calendar, Clock, Edit 
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const ProfileView = () => {
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [showContact, setShowContact] = useState(false);
   const [hasShownInterest, setHasShownInterest] = useState(false);
-
-  const profile = useMemo(() => {
-    const profiles = getProfiles();
-    return profiles.find(p => p.id === id);
-  }, [id]);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
-    if (id) {
-      incrementViews(id);
+    async function loadProfile() {
+      if (!id) return;
+      
+      setIsLoading(true);
+      const data = await fetchProfileById(id);
+      setProfile(data);
+      setIsLoading(false);
+
+      if (data) {
+        incrementProfileViews(id);
+      }
     }
+    
+    loadProfile();
   }, [id]);
 
-  const handleInterest = () => {
+  const handleInterest = async () => {
     if (!hasShownInterest && id) {
-      incrementInterests(id);
+      await incrementProfileInterests(id);
       setHasShownInterest(true);
       setShowContact(true);
       toast({
@@ -41,6 +57,29 @@ const ProfileView = () => {
       setShowContact(true);
     }
   };
+
+  const handleProfileUpdated = (updatedProfile: Profile) => {
+    setProfile(updatedProfile);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="container py-8">
+          <Skeleton className="h-8 w-32 mb-6" />
+          <div className="grid lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              <Skeleton className="h-48 w-full rounded-xl" />
+              <Skeleton className="h-32 w-full rounded-xl" />
+            </div>
+            <Skeleton className="h-64 w-full rounded-xl" />
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   if (!profile) {
     return (
@@ -102,7 +141,7 @@ const ProfileView = () => {
                     alt={profile.name}
                     className="w-24 h-24 rounded-xl object-cover bg-muted"
                   />
-                  {(profile.lastActive === 'Just now' || profile.lastActive === 'Active today') && (
+                  {(profile.lastActive === 'Just now' || profile.lastActive?.includes('minutes')) && (
                     <span className="absolute -bottom-1 -right-1 w-5 h-5 bg-badge-active rounded-full border-2 border-card" />
                   )}
                 </div>
@@ -110,8 +149,8 @@ const ProfileView = () => {
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center gap-2 mb-2">
                     <h1 className="font-heading text-2xl text-foreground">{profile.name}</h1>
-                    {isFounder && <HiringBadge variant="hiring" />}
-                    {profile.joinedAt === 'Today' && <HiringBadge variant="new" />}
+                    {profile.isHiring && <HiringBadge variant="hiring" />}
+                    {profile.isFeatured && <HiringBadge variant="new" />}
                   </div>
                   
                   <p className="text-muted-foreground mb-3">{profile.tagline}</p>
@@ -151,9 +190,11 @@ const ProfileView = () => {
                   <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm">
                     {profile.category.charAt(0).toUpperCase() + profile.category.slice(1)}
                   </span>
-                  <span className="px-3 py-1 rounded-full bg-secondary text-secondary-foreground text-sm">
-                    {profile.hiringType}
-                  </span>
+                  {profile.hiringType && (
+                    <span className="px-3 py-1 rounded-full bg-secondary text-secondary-foreground text-sm">
+                      {profile.hiringType}
+                    </span>
+                  )}
                 </div>
               </div>
             )}
@@ -190,64 +231,90 @@ const ProfileView = () => {
 
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="sticky top-24 p-6 rounded-xl bg-card border border-border/50">
-              <h3 className="font-heading text-lg text-foreground mb-4">Connect</h3>
-              
-              {!showContact ? (
-                <Button
-                  onClick={handleInterest}
-                  className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
-                  size="lg"
-                >
-                  <Heart className={hasShownInterest ? 'fill-current' : ''} />
-                  {hasShownInterest ? 'View Contact' : 'I am interested'}
-                </Button>
-              ) : (
-                <div className="space-y-4">
-                  <div className="p-4 rounded-lg bg-secondary/50">
-                    <p className="text-sm text-muted-foreground mb-2">Contact via {profile.contactType}</p>
-                    <a
-                      href={getContactLink()}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-primary hover:underline"
-                    >
-                      {getContactIcon()}
-                      {profile.contact}
-                    </a>
-                  </div>
-                  
+            <div className="sticky top-24 space-y-4">
+              {/* Connect Card */}
+              <div className="p-6 rounded-xl bg-card border border-border/50">
+                <h3 className="font-heading text-lg text-foreground mb-4">Connect</h3>
+                
+                {!showContact ? (
                   <Button
-                    asChild
-                    className="w-full gap-2"
+                    onClick={handleInterest}
+                    className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
                     size="lg"
                   >
-                    <a href={getContactLink()} target="_blank" rel="noopener noreferrer">
-                      {getContactIcon()}
-                      Contact {profile.name.split(' ')[0]}
-                    </a>
+                    <Heart className={hasShownInterest ? 'fill-current' : ''} />
+                    {hasShownInterest ? 'View Contact' : 'I am interested'}
                   </Button>
-                </div>
-              )}
+                ) : (
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-lg bg-secondary/50">
+                      <p className="text-sm text-muted-foreground mb-2">Contact via {profile.contactType}</p>
+                      <a
+                        href={getContactLink()}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-primary hover:underline"
+                      >
+                        {getContactIcon()}
+                        {profile.contact}
+                      </a>
+                    </div>
+                    
+                    <Button
+                      asChild
+                      className="w-full gap-2"
+                      size="lg"
+                    >
+                      <a href={getContactLink()} target="_blank" rel="noopener noreferrer">
+                        {getContactIcon()}
+                        Contact {profile.name.split(' ')[0]}
+                      </a>
+                    </Button>
+                  </div>
+                )}
 
-              <p className="text-xs text-muted-foreground mt-4 text-center">
-                {showContact
-                  ? 'Please be respectful when reaching out'
-                  : 'Click to reveal contact info'}
-              </p>
+                <p className="text-xs text-muted-foreground mt-4 text-center">
+                  {showContact
+                    ? 'Please be respectful when reaching out'
+                    : 'Click to reveal contact info'}
+                </p>
 
-              {!isFounder && profile.preferredProjectType && (
-                <div className="mt-6 pt-6 border-t border-border/50">
-                  <h4 className="text-sm font-medium text-foreground mb-2">Preferred projects</h4>
-                  <p className="text-sm text-muted-foreground">{profile.preferredProjectType}</p>
-                </div>
-              )}
+                {!isFounder && profile.preferredProjectType && (
+                  <div className="mt-6 pt-6 border-t border-border/50">
+                    <h4 className="text-sm font-medium text-foreground mb-2">Preferred projects</h4>
+                    <p className="text-sm text-muted-foreground">{profile.preferredProjectType}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Edit Profile Card */}
+              <div className="p-6 rounded-xl bg-card border border-border/50">
+                <h3 className="font-heading text-lg text-foreground mb-2">Your profile?</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Verify with your backup email to make changes
+                </p>
+                <Button
+                  variant="outline"
+                  className="w-full gap-2"
+                  onClick={() => setIsEditModalOpen(true)}
+                >
+                  <Edit className="h-4 w-4" />
+                  Edit Profile
+                </Button>
+              </div>
             </div>
           </div>
         </div>
       </main>
 
       <Footer />
+
+      <EditProfileModal
+        profile={profile}
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onProfileUpdated={handleProfileUpdated}
+      />
     </div>
   );
 };
