@@ -10,7 +10,7 @@ export interface Profile {
   // Common fields
   building: string;
   lookingFor: string;
-  contactType: 'email' | 'twitter' | 'linkedin';
+  contactType: 'email' | 'twitter' | 'linkedin' | 'discord';
   contact: string;
   
   // Founder specific

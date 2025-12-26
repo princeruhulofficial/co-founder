@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Profile } from '@/lib/data';
+import { Profile } from '@/lib/database';
 import { HiringBadge } from './HiringBadge';
 import { Eye, Heart, ChevronRight } from 'lucide-react';
 
