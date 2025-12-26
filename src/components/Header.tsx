@@ -25,8 +25,8 @@ export function Header() {
           <span className="font-heading text-xl text-foreground">CoFoundr</span>
         </Link>
 
-        {/* Desktop search */}
-        <form onSubmit={handleSearch} className="hidden flex-1 max-w-md mx-8 md:block">
+        {/* Search - visible on all screens */}
+        <form onSubmit={handleSearch} className="flex-1 max-w-md mx-4 sm:mx-8">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -71,21 +71,6 @@ export function Header() {
         </div>
       </div>
       
-      {/* Mobile search bar */}
-      <div className="md:hidden px-4 pb-3">
-        <form onSubmit={handleSearch}>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 bg-secondary/50 border-border/50 focus:border-primary/50 focus:ring-primary/20"
-            />
-          </div>
-        </form>
-      </div>
     </header>
   );
 }
