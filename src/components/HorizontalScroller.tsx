@@ -1,6 +1,6 @@
 import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Profile } from '@/lib/data';
+import { Profile } from '@/lib/database';
 import { ProfileCard } from './ProfileCard';
 
 interface HorizontalScrollerProps {
