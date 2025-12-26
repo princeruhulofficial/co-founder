@@ -4,16 +4,21 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { HiringBadge } from '@/components/HiringBadge';
 import { EditProfileModal } from '@/components/EditProfileModal';
+import { ListProjectModal } from '@/components/ListProjectModal';
 import { 
   Profile, 
+  Project,
   fetchProfileById, 
+  fetchProjectsByProfileId,
   incrementProfileViews, 
-  incrementProfileInterests 
+  incrementProfileInterests,
+  verifyEditAccess,
+  markHiringCompleted
 } from '@/lib/database';
 import { Button } from '@/components/ui/button';
 import { 
   Eye, Heart, ArrowLeft, Mail, Twitter, Linkedin, 
-  ExternalLink, Sparkles, Calendar, Clock, Edit 
+  ExternalLink, Sparkles, Calendar, Clock, Edit, Plus, CheckCircle, Briefcase
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -22,21 +27,34 @@ const ProfileView = () => {
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showContact, setShowContact] = useState(false);
   const [hasShownInterest, setHasShownInterest] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
+  
+  // Verification state
+  const [isVerified, setIsVerified] = useState(false);
+  const [verifiedEmail, setVerifiedEmail] = useState('');
+  const [verifyEmail, setVerifyEmail] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
 
   useEffect(() => {
     async function loadProfile() {
       if (!id) return;
       
       setIsLoading(true);
-      const data = await fetchProfileById(id);
-      setProfile(data);
+      const [profileData, projectsData] = await Promise.all([
+        fetchProfileById(id),
+        fetchProjectsByProfileId(id)
+      ]);
+      setProfile(profileData);
+      setProjects(projectsData);
       setIsLoading(false);
 
-      if (data) {
+      if (profileData) {
         incrementProfileViews(id);
       }
     }
@@ -60,6 +78,57 @@ const ProfileView = () => {
 
   const handleProfileUpdated = (updatedProfile: Profile) => {
     setProfile(updatedProfile);
+  };
+
+  const handleVerifyOwnership = async () => {
+    if (!verifyEmail.trim() || !id) return;
+    
+    setIsVerifying(true);
+    const result = await verifyEditAccess(id, verifyEmail.trim());
+    setIsVerifying(false);
+
+    if (result.verified) {
+      setIsVerified(true);
+      setVerifiedEmail(verifyEmail.trim());
+      toast({
+        title: "Ownership verified!",
+        description: "You can now edit your profile and list projects.",
+      });
+    } else {
+      toast({
+        title: "Verification failed",
+        description: result.error || "The backup email does not match.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleProjectCreated = (project: Project) => {
+    if (editingProject) {
+      setProjects(prev => prev.map(p => p.id === project.id ? project : p));
+    } else {
+      setProjects(prev => [project, ...prev]);
+    }
+    setEditingProject(null);
+  };
+
+  const handleMarkHiringCompleted = async (projectId: string) => {
+    const result = await markHiringCompleted(projectId, verifiedEmail);
+    if (result.success) {
+      setProjects(prev => prev.map(p => 
+        p.id === projectId ? { ...p, isHiring: false, isFeatured: false } : p
+      ));
+      toast({
+        title: "Hiring completed!",
+        description: "Your project has been marked as completed.",
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: result.error || "Failed to update project.",
+        variant: "destructive",
+      });
+    }
   };
 
   if (isLoading) {
@@ -199,6 +268,81 @@ const ProfileView = () => {
               </div>
             )}
 
+            {/* Listed Projects Section */}
+            {projects.length > 0 && (
+              <div className="p-6 rounded-xl bg-card border border-border/50">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Briefcase className="h-5 w-5 text-primary" />
+                    <h2 className="font-heading text-xl text-foreground">Listed Projects</h2>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  {projects.map(project => (
+                    <div 
+                      key={project.id} 
+                      className="p-4 rounded-lg bg-secondary/30 border border-border/30"
+                    >
+                      <div className="flex items-start gap-4">
+                        {project.logo && (
+                          <img 
+                            src={project.logo} 
+                            alt={project.name}
+                            className="w-12 h-12 rounded-lg object-cover shrink-0"
+                          />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-medium text-foreground">{project.name}</h3>
+                            {project.isHiring ? (
+                              <HiringBadge variant="hiring" />
+                            ) : (
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                                Completed
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-2">{project.description}</p>
+                          <p className="text-xs text-muted-foreground">
+                            <span className="font-medium">Looking for:</span> {project.lookingFor}
+                          </p>
+                          
+                          {/* Owner actions */}
+                          {isVerified && (
+                            <div className="flex gap-2 mt-3">
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => {
+                                  setEditingProject(project);
+                                  setIsProjectModalOpen(true);
+                                }}
+                              >
+                                <Edit className="h-3 w-3 mr-1" />
+                                Edit
+                              </Button>
+                              {project.isHiring && (
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => handleMarkHiringCompleted(project.id)}
+                                  className="text-muted-foreground"
+                                >
+                                  <CheckCircle className="h-3 w-3 mr-1" />
+                                  Mark Completed
+                                </Button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* What they're building */}
             <div className="p-6 rounded-xl bg-card border border-border/50">
               <h2 className="font-heading text-xl text-foreground mb-3">What they're building</h2>
@@ -287,20 +431,60 @@ const ProfileView = () => {
                 )}
               </div>
 
-              {/* Edit Profile Card */}
+              {/* Profile Owner Section */}
               <div className="p-6 rounded-xl bg-card border border-border/50">
                 <h3 className="font-heading text-lg text-foreground mb-2">Your profile?</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Verify with your backup email to make changes
-                </p>
-                <Button
-                  variant="outline"
-                  className="w-full gap-2"
-                  onClick={() => setIsEditModalOpen(true)}
-                >
-                  <Edit className="h-4 w-4" />
-                  Edit Profile
-                </Button>
+                
+                {!isVerified ? (
+                  <div className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      Verify with your backup email to make changes
+                    </p>
+                    <input
+                      type="email"
+                      value={verifyEmail}
+                      onChange={(e) => setVerifyEmail(e.target.value)}
+                      placeholder="your-backup@email.com"
+                      className="w-full px-3 py-2 rounded-md border border-border bg-background text-sm"
+                      onKeyDown={(e) => e.key === 'Enter' && handleVerifyOwnership()}
+                    />
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={handleVerifyOwnership}
+                      disabled={isVerifying}
+                    >
+                      {isVerifying ? 'Verifying...' : 'Verify Ownership'}
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+                      <CheckCircle className="h-4 w-4" />
+                      <span>Verified owner</span>
+                    </div>
+                    
+                    <Button
+                      variant="outline"
+                      className="w-full gap-2"
+                      onClick={() => setIsEditModalOpen(true)}
+                    >
+                      <Edit className="h-4 w-4" />
+                      Edit Profile
+                    </Button>
+                    
+                    <Button
+                      className="w-full gap-2"
+                      onClick={() => {
+                        setEditingProject(null);
+                        setIsProjectModalOpen(true);
+                      }}
+                    >
+                      <Plus className="h-4 w-4" />
+                      List Your Project
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -315,6 +499,20 @@ const ProfileView = () => {
         onClose={() => setIsEditModalOpen(false)}
         onProfileUpdated={handleProfileUpdated}
       />
+
+      {isVerified && (
+        <ListProjectModal
+          profileId={profile.id}
+          verifiedEmail={verifiedEmail}
+          isOpen={isProjectModalOpen}
+          onClose={() => {
+            setIsProjectModalOpen(false);
+            setEditingProject(null);
+          }}
+          onProjectCreated={handleProjectCreated}
+          existingProject={editingProject}
+        />
+      )}
     </div>
   );
 };

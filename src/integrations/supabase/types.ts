@@ -86,6 +86,53 @@ export type Database = {
         }
         Relationships: []
       }
+      projects: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          is_featured: boolean
+          is_hiring: boolean
+          logo: string | null
+          looking_for: string
+          name: string
+          profile_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          is_featured?: boolean
+          is_hiring?: boolean
+          logo?: string | null
+          looking_for: string
+          name: string
+          profile_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          is_featured?: boolean
+          is_hiring?: boolean
+          logo?: string | null
+          looking_for?: string
+          name?: string
+          profile_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

@@ -23,6 +23,32 @@ export interface DbProfile {
   updated_at: string;
 }
 
+export interface DbProject {
+  id: string;
+  profile_id: string;
+  logo: string | null;
+  name: string;
+  description: string;
+  looking_for: string;
+  is_hiring: boolean;
+  is_featured: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Project {
+  id: string;
+  profileId: string;
+  logo: string | null;
+  name: string;
+  description: string;
+  lookingFor: string;
+  isHiring: boolean;
+  isFeatured: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Convert DB profile to frontend Profile format (for compatibility)
 export interface Profile {
   id: string;
@@ -47,6 +73,21 @@ export interface Profile {
   category: string;
   isHiring?: boolean;
   isFeatured?: boolean;
+}
+
+function dbProjectToProject(dbProject: DbProject): Project {
+  return {
+    id: dbProject.id,
+    profileId: dbProject.profile_id,
+    logo: dbProject.logo,
+    name: dbProject.name,
+    description: dbProject.description,
+    lookingFor: dbProject.looking_for,
+    isHiring: dbProject.is_hiring,
+    isFeatured: dbProject.is_featured,
+    createdAt: dbProject.created_at,
+    updatedAt: dbProject.updated_at,
+  };
 }
 
 function getRelativeTime(dateStr: string): string {
@@ -258,4 +299,110 @@ export async function updateProfileSecure(
   }
 
   return { success: false, error: data.error || 'Update failed' };
+}
+
+// Fetch projects by profile ID
+export async function fetchProjectsByProfileId(profileId: string): Promise<Project[]> {
+  const { data, error } = await supabase
+    .from('projects')
+    .select('*')
+    .eq('profile_id', profileId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching projects:', error);
+    return [];
+  }
+
+  return (data || []).map(dbProjectToProject);
+}
+
+// Fetch featured projects (hiring)
+export async function fetchFeaturedProjects(): Promise<Project[]> {
+  const { data, error } = await supabase
+    .from('projects')
+    .select('*')
+    .eq('is_featured', true)
+    .eq('is_hiring', true)
+    .order('created_at', { ascending: false })
+    .limit(10);
+
+  if (error) {
+    console.error('Error fetching featured projects:', error);
+    return [];
+  }
+
+  return (data || []).map(dbProjectToProject);
+}
+
+// Create project via edge function
+export async function createProject(projectData: {
+  profileId: string;
+  verifiedEmail: string;
+  logo?: string;
+  name: string;
+  description: string;
+  lookingFor: string;
+  isHiring: boolean;
+}): Promise<{ success: boolean; project?: Project; error?: string }> {
+  const { data, error } = await supabase.functions.invoke('manage-project', {
+    body: {
+      action: 'create',
+      profileId: projectData.profileId,
+      backupEmail: projectData.verifiedEmail,
+      project: {
+        logo: projectData.logo,
+        name: projectData.name,
+        description: projectData.description,
+        lookingFor: projectData.lookingFor,
+        isHiring: projectData.isHiring,
+      },
+    },
+  });
+
+  if (error) {
+    console.error('Error creating project:', error);
+    return { success: false, error: 'Failed to create project' };
+  }
+
+  if (data.success && data.project) {
+    return { success: true, project: dbProjectToProject(data.project) };
+  }
+
+  return { success: false, error: data.error || 'Create failed' };
+}
+
+// Update project via edge function
+export async function updateProject(
+  projectId: string,
+  verifiedEmail: string,
+  updates: Record<string, unknown>
+): Promise<{ success: boolean; project?: Project; error?: string }> {
+  const { data, error } = await supabase.functions.invoke('manage-project', {
+    body: {
+      action: 'update',
+      projectId,
+      backupEmail: verifiedEmail,
+      updates,
+    },
+  });
+
+  if (error) {
+    console.error('Error updating project:', error);
+    return { success: false, error: 'Failed to update project' };
+  }
+
+  if (data.success && data.project) {
+    return { success: true, project: dbProjectToProject(data.project) };
+  }
+
+  return { success: false, error: data.error || 'Update failed' };
+}
+
+// Mark project hiring as completed
+export async function markHiringCompleted(
+  projectId: string,
+  verifiedEmail: string
+): Promise<{ success: boolean; error?: string }> {
+  return updateProject(projectId, verifiedEmail, { is_hiring: false });
 }
