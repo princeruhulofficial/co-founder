@@ -25,6 +25,7 @@ export function Header() {
           <span className="font-heading text-xl text-foreground">CoFoundr</span>
         </Link>
 
+        {/* Desktop search */}
         <form onSubmit={handleSearch} className="hidden flex-1 max-w-md mx-8 md:block">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -38,7 +39,14 @@ export function Header() {
           </div>
         </form>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Mobile Add Profile Button */}
+          <Link to="/add-profile" className="sm:hidden">
+            <Button size="sm" className="bg-foreground text-background hover:bg-foreground/90 h-9 px-3">
+              <Plus className="h-4 w-4" />
+            </Button>
+          </Link>
+          
           <Link to="/profiles" className="hidden sm:block">
             <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
               Browse
@@ -61,6 +69,22 @@ export function Header() {
             <span className="sr-only">Toggle theme</span>
           </Button>
         </div>
+      </div>
+      
+      {/* Mobile search bar */}
+      <div className="md:hidden px-4 pb-3">
+        <form onSubmit={handleSearch}>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 bg-secondary/50 border-border/50 focus:border-primary/50 focus:ring-primary/20"
+            />
+          </div>
+        </form>
       </div>
     </header>
   );

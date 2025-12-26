@@ -78,13 +78,13 @@ export function dbProfileToProfile(dbProfile: DbProfile): Profile {
     lookingFor: dbProfile.type === 'founder' 
       ? `Looking for ${dbProfile.hiring_type || 'co-founder'}` 
       : dbProfile.preferred_project_type || 'Exciting startup opportunities',
-    contactType: dbProfile.contact_type === 'discord' ? 'email' : dbProfile.contact_type,
+    contactType: dbProfile.contact_type,
     contact: dbProfile.contact,
     projectName: dbProfile.project_name || undefined,
     projectDescription: dbProfile.project_description || undefined,
     hiringType: dbProfile.hiring_type || undefined,
-    developerNeeds: dbProfile.skills_needed.length > 0 ? dbProfile.skills_needed : undefined,
-    skills: dbProfile.skills.length > 0 ? dbProfile.skills : undefined,
+    developerNeeds: (dbProfile.skills_needed && dbProfile.skills_needed.length > 0) ? dbProfile.skills_needed : undefined,
+    skills: (dbProfile.skills && dbProfile.skills.length > 0) ? dbProfile.skills : undefined,
     preferredProjectType: dbProfile.preferred_project_type || undefined,
     views: dbProfile.views,
     interests: dbProfile.interests,
