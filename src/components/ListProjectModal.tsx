@@ -8,6 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Loader2, Upload, Image as ImageIcon, X, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { createProject, updateProject, Project } from '@/lib/database';
+import { trackProjectPublished } from '@/lib/analytics';
 
 interface ListProjectModalProps {
   profileId: string;
@@ -100,6 +101,10 @@ export function ListProjectModal({
       }
 
       if (result.success && result.project) {
+        // Track project published for analytics (only for new projects)
+        if (!existingProject) {
+          trackProjectPublished(profileId);
+        }
         toast({
           title: existingProject ? "Project updated" : "Project listed!",
           description: existingProject 

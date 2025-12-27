@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { categories } from '@/lib/data';
 import { createProfile } from '@/lib/database';
+import { trackAddProfileStarted, trackAddProfileCompleted } from '@/lib/analytics';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -43,6 +44,11 @@ const AddProfile = () => {
   // Developer specific
   const [skills, setSkills] = useState('');
   const [preferredProjectType, setPreferredProjectType] = useState('');
+
+  // Track add profile started on mount
+  useEffect(() => {
+    trackAddProfileStarted();
+  }, []);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -101,6 +107,8 @@ const AddProfile = () => {
     setIsSubmitting(false);
 
     if (newProfile) {
+      // Track add profile completed for analytics
+      trackAddProfileCompleted(profileType);
       toast({
         title: "Profile created!",
         description: "Your profile is now live.",

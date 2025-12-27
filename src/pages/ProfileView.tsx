@@ -15,6 +15,11 @@ import {
   verifyEditAccess,
   markHiringCompleted
 } from '@/lib/database';
+import { 
+  trackProfileView, 
+  trackInterestedClick, 
+  trackHiringCompleted 
+} from '@/lib/analytics';
 import { Button } from '@/components/ui/button';
 import { 
   Eye, Heart, ArrowLeft, Mail, Twitter, Linkedin, 
@@ -56,6 +61,8 @@ const ProfileView = () => {
 
       if (profileData) {
         incrementProfileViews(id);
+        // Track profile view for analytics
+        trackProfileView(id, profileData.type as 'founder' | 'developer');
       }
     }
     
@@ -67,6 +74,8 @@ const ProfileView = () => {
       await incrementProfileInterests(id);
       setHasShownInterest(true);
       setShowContact(true);
+      // Track interested click for analytics
+      trackInterestedClick(id);
       toast({
         title: "Interest registered!",
         description: "Contact information is now visible.",
@@ -118,6 +127,10 @@ const ProfileView = () => {
       setProjects(prev => prev.map(p => 
         p.id === projectId ? { ...p, isHiring: false, isFeatured: false } : p
       ));
+      // Track hiring completed for analytics
+      if (id) {
+        trackHiringCompleted(id, projectId);
+      }
       toast({
         title: "Hiring completed!",
         description: "Your project has been marked as completed.",
