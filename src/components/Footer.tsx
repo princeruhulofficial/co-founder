@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import { Sparkles, Twitter, Linkedin } from 'lucide-react';
+import { Twitter, Linkedin } from 'lucide-react';
+import logo from '@/assets/logo.png';
 
 export function Footer() {
   return (
@@ -8,8 +9,8 @@ export function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
           <div className="col-span-2 md:col-span-1">
             <Link to="/" className="flex items-center gap-2 mb-4">
-              <Sparkles className="h-5 w-5 text-primary" />
-              <span className="font-heading text-xl text-foreground">CoFoundr</span>
+              <img src={logo} alt="Co Finder" className="h-8 w-8 object-contain" />
+              <span className="font-heading text-xl text-foreground">Co Finder</span>
             </Link>
             <p className="text-sm text-muted-foreground">
               The platform for founders to find their perfect technical co-founder.
