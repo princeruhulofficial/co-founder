@@ -1,9 +1,10 @@
-import { Search, Sparkles, Sun, Moon, Plus } from 'lucide-react';
+import { Search, Sun, Moon, Plus } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 import { useTheme } from 'next-themes';
+import logo from '@/assets/logo.png';
 
 export function Header() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -21,8 +22,8 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl">
       <div className="container flex h-16 items-center justify-between gap-4">
         <Link to="/" className="flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-foreground" />
-          <span className="font-heading text-xl text-foreground">CoFoundr</span>
+          <img src={logo} alt="Co Finder" className="h-8 w-8 object-contain" />
+          <span className="font-heading text-xl text-foreground">Co Finder</span>
         </Link>
 
         {/* Search - visible on all screens */}
