@@ -87,7 +87,7 @@ export function Footer() {
 
         <div className="flex flex-col sm:flex-row items-center justify-between pt-8 border-t border-border/30 gap-4">
           <p className="text-sm text-muted-foreground">
-            © 2024 CoFoundr. All rights reserved.
+            © 2025 Prince Ruhul all rights received.
           </p>
           
           <div className="flex items-center gap-4">
