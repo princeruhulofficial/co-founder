@@ -4,6 +4,7 @@ import { Hero } from '@/components/Hero';
 import { HorizontalScroller } from '@/components/HorizontalScroller';
 import { Leaderboard } from '@/components/Leaderboard';
 import { CategorySection } from '@/components/CategorySection';
+import { CoFounderGame } from '@/components/CoFounderGame';
 import { Footer } from '@/components/Footer';
 import { fetchProfiles, fetchFeaturedProfiles, Profile } from '@/lib/database';
 
@@ -48,6 +49,8 @@ const Index = () => {
         />
 
         <Leaderboard profiles={profiles} />
+
+        <CoFounderGame />
 
         <CategorySection />
       </main>
