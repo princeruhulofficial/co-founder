@@ -72,3 +72,29 @@ export const trackAddProfileCompleted = (role: 'founder' | 'developer') => {
     });
   }
 };
+
+// Track co-founder game started
+export const trackGameStarted = () => {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', 'cofounder_game_started');
+  }
+};
+
+// Track co-founder game question answered
+export const trackGameQuestionAnswered = (questionId: number, questionHeadline: string, selectedOption: 'A' | 'B', isCorrect: boolean) => {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', 'cofounder_game_question_answered', {
+      question_id: questionId,
+      question_headline: questionHeadline,
+      selected_option: selectedOption,
+      is_correct: isCorrect,
+    });
+  }
+};
+
+// Track co-founder game completed
+export const trackGameCompleted = () => {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', 'cofounder_game_completed');
+  }
+};

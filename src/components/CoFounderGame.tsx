@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { RotateCcw, Users, Briefcase } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import mentorImage from '@/assets/mentor-character.png';
+import { trackGameStarted, trackGameQuestionAnswered, trackGameCompleted } from '@/lib/analytics';
 
 interface Question {
   id: number;
@@ -124,11 +125,15 @@ export function CoFounderGame() {
     setGameState('playing');
     setCurrentQuestion(0);
     setSelectedOption(null);
+    trackGameStarted();
   };
 
   const handleSelect = (option: 'A' | 'B') => {
     setSelectedOption(option);
     setGameState('feedback');
+    const q = questions[currentQuestion];
+    const isCorrect = option === q.correctOption;
+    trackGameQuestionAnswered(q.id, q.headline, option, isCorrect);
   };
 
   const handleNext = () => {
@@ -138,6 +143,7 @@ export function CoFounderGame() {
       setGameState('playing');
     } else {
       setGameState('complete');
+      trackGameCompleted();
     }
   };
 
