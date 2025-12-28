@@ -1,8 +1,12 @@
 import { Link } from 'react-router-dom';
 import { Twitter, Linkedin } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import logo from '@/assets/logo.png';
 
 export function Footer() {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
+
   return (
     <footer className="border-t border-border/30 py-12 mt-12">
       <div className="container">
@@ -83,6 +87,52 @@ export function Footer() {
                 </Link>
               </li>
             </ul>
+          </div>
+        </div>
+
+        {/* Product Hunt Embed */}
+        <div className="flex flex-col items-center gap-6 py-8 border-t border-border/30">
+          <a 
+            href="https://www.producthunt.com/products/co-finder-2?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-co-finder-2" 
+            target="_blank" 
+            rel="noopener noreferrer"
+          >
+            <img 
+              alt="Co-finder - Find the right co-founder who actually wants to build. | Product Hunt"
+              width="250"
+              height="54"
+              src={`https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1054599&theme=${isDark ? 'dark' : 'light'}&t=1766732480442`}
+            />
+          </a>
+
+          <div 
+            className={`rounded-xl p-5 max-w-[500px] w-full shadow-sm border ${
+              isDark 
+                ? 'bg-card border-border text-foreground' 
+                : 'bg-white border-[rgb(224,224,224)]'
+            }`}
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <img 
+                alt="Co-finder"
+                src="https://ph-files.imgix.net/c2bf52f4-b9a2-4a9a-b397-ccd88f632688.png?auto=format&fit=crop&w=80&h=80"
+                className="w-16 h-16 rounded-lg object-cover"
+              />
+              <div>
+                <h3 className="m-0 text-lg font-semibold">Co-finder</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Find the right co-founder who actually wants to build.
+                </p>
+              </div>
+            </div>
+            <a 
+              href="https://www.producthunt.com/products/co-finder-2?embed=true&utm_source=embed&utm_medium=post_embed"
+              target="_blank"
+              rel="noopener"
+              className="inline-flex items-center px-4 py-2 bg-[#ff6154] text-white no-underline rounded-lg text-sm font-semibold hover:bg-[#e5574b] transition-colors"
+            >
+              Check it out on Product Hunt →
+            </a>
           </div>
         </div>
 
