@@ -50,7 +50,17 @@ const Index = () => {
 
         <Leaderboard profiles={profiles} />
 
-        <CoFounderGame />
+        <section className="py-12">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-heading font-bold text-foreground mb-4">
+              Are You Ready to Find Your Co-Founder?
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Test your founder instincts with this quick interactive game. Learn what matters most when choosing the right partner to build with.
+            </p>
+          </div>
+          <CoFounderGame />
+        </section>
 
         <CategorySection />
       </main>
