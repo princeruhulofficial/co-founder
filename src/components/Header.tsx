@@ -1,4 +1,4 @@
-import { Search, Sun, Moon, Plus } from 'lucide-react';
+import { Search, Sun, Moon, Plus, MessageSquarePlus } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -51,6 +51,12 @@ export function Header() {
           <Link to="/profiles" className="hidden sm:block">
             <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
               Browse
+            </Button>
+          </Link>
+          <Link to="/feedback" className="hidden sm:block">
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+              <MessageSquarePlus className="h-4 w-4 mr-1" />
+              Feedback
             </Button>
           </Link>
           <Link to="/add-profile" className="hidden sm:block">

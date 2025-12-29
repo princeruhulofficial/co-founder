@@ -14,6 +14,100 @@ export type Database = {
   }
   public: {
     Tables: {
+      feedback_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          post_id: string
+          session_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          post_id: string
+          session_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          post_id?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "feedback_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feedback_posts: {
+        Row: {
+          context: string
+          created_at: string
+          expires_at: string
+          id: string
+          question: string
+          session_id: string
+          title: string
+        }
+        Insert: {
+          context: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          question: string
+          session_id: string
+          title: string
+        }
+        Update: {
+          context?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          question?: string
+          session_id?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      feedback_reactions: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          reaction_type: string
+          session_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          reaction_type: string
+          session_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          reaction_type?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_reactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "feedback_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar: string | null
