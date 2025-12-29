@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
 import { HorizontalScroller } from '@/components/HorizontalScroller';
@@ -50,17 +51,36 @@ const Index = () => {
 
         <Leaderboard profiles={profiles} />
 
-        <section className="py-12">
-          <div className="text-center mb-8">
+        <motion.section 
+          className="py-12"
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
+          <motion.div 
+            className="text-center mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
             <h2 className="text-3xl md:text-4xl font-heading font-bold text-foreground mb-4">
               Are You Ready to Find Your Co-Founder?
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
               Test your founder instincts with this quick interactive game. Learn what matters most when choosing the right partner to build with.
             </p>
-          </div>
-          <CoFounderGame />
-        </section>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <CoFounderGame />
+          </motion.div>
+        </motion.section>
 
         <CategorySection />
       </main>
