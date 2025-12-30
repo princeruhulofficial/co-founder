@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.manage-project]
 verify_jwt = false
+
+[functions.cleanup-feedback]
+verify_jwt = false
