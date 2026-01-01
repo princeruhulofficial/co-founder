@@ -10,6 +10,7 @@ import Profiles from "./pages/Profiles";
 import ProfileView from "./pages/ProfileView";
 import AddProfile from "./pages/AddProfile";
 import Feedback from "./pages/Feedback";
+import Jobs from "./pages/Jobs";
 import About from "./pages/About";
 import FAQ from "./pages/FAQ";
 import StaticPage from "./pages/StaticPage";
@@ -28,6 +29,7 @@ const AppRoutes = () => {
       <Route path="/profile/:id" element={<ProfileView />} />
       <Route path="/add-profile" element={<AddProfile />} />
       <Route path="/feedback" element={<Feedback />} />
+      <Route path="/jobs" element={<Jobs />} />
       <Route path="/about" element={<About />} />
       <Route path="/faq" element={<FAQ />} />
       <Route path="/blog" element={<StaticPage />} />
