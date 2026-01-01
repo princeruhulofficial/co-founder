@@ -16,11 +16,12 @@ Deno.serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Delete expired feedback posts (older than 24 hours)
+    // Delete expired feedback posts (older than 24 hours), but skip starter posts
     const { data: deletedPosts, error: postsError } = await supabase
       .from("feedback_posts")
       .delete()
       .lt("expires_at", new Date().toISOString())
+      .eq("is_starter", false)
       .select("id");
 
     if (postsError) {

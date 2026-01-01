@@ -52,6 +52,7 @@ export type Database = {
           created_at: string
           expires_at: string
           id: string
+          is_starter: boolean
           question: string
           session_id: string
           title: string
@@ -61,6 +62,7 @@ export type Database = {
           created_at?: string
           expires_at?: string
           id?: string
+          is_starter?: boolean
           question: string
           session_id: string
           title: string
@@ -70,6 +72,7 @@ export type Database = {
           created_at?: string
           expires_at?: string
           id?: string
+          is_starter?: boolean
           question?: string
           session_id?: string
           title?: string
