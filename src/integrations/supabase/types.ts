@@ -111,6 +111,48 @@ export type Database = {
           },
         ]
       }
+      job_listings: {
+        Row: {
+          company_name: string
+          contact_email: string | null
+          contact_other: string | null
+          created_at: string
+          description: string
+          id: string
+          looking_for: string
+          management_code: string
+          role_title: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          company_name: string
+          contact_email?: string | null
+          contact_other?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          looking_for: string
+          management_code?: string
+          role_title: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          company_name?: string
+          contact_email?: string | null
+          contact_other?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          looking_for?: string
+          management_code?: string
+          role_title?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar: string | null

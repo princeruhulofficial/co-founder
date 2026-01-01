@@ -1,4 +1,4 @@
-import { Search, Sun, Moon, Plus, MessageSquarePlus, Menu, X, Users } from 'lucide-react';
+import { Search, Sun, Moon, Plus, MessageSquarePlus, Menu, X, Users, Briefcase } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,6 +32,7 @@ export function Header() {
 
   const navLinks = [
     { to: '/profiles', label: 'Browse', icon: Users },
+    { to: '/jobs', label: 'Jobs', icon: Briefcase },
     { to: '/feedback', label: 'Feedback', icon: MessageSquarePlus },
     { to: '/add-profile', label: 'Add Profile', icon: Plus },
   ];
@@ -63,6 +64,12 @@ export function Header() {
           <Link to="/profiles">
             <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
               Browse
+            </Button>
+          </Link>
+          <Link to="/jobs">
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+              <Briefcase className="h-4 w-4 mr-1" />
+              Jobs
             </Button>
           </Link>
           <Link to="/feedback">
