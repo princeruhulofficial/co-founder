@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Upload, X, Briefcase, Code, Loader2, Info } from 'lucide-react';
+import { Upload, X, Briefcase, Code, Loader2, Info, Github, Linkedin, Globe } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const AddProfile = () => {
@@ -33,6 +33,11 @@ const AddProfile = () => {
   const [contact, setContact] = useState('');
   const [backupEmail, setBackupEmail] = useState('');
   const [category, setCategory] = useState('saas');
+
+  // Proof links (quality gate)
+  const [github, setGithub] = useState('');
+  const [linkedin, setLinkedin] = useState('');
+  const [website, setWebsite] = useState('');
   
   // Founder specific
   const [projectName, setProjectName] = useState('');
@@ -45,7 +50,6 @@ const AddProfile = () => {
   const [skills, setSkills] = useState('');
   const [preferredProjectType, setPreferredProjectType] = useState('');
 
-  // Track add profile started on mount
   useEffect(() => {
     trackAddProfileStarted();
   }, []);
@@ -61,6 +65,10 @@ const AddProfile = () => {
     }
   };
 
+  const hasProofLink = () => {
+    return Boolean(github.trim() || linkedin.trim() || website.trim());
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -68,6 +76,16 @@ const AddProfile = () => {
       toast({
         title: "Missing required fields",
         description: "Please fill in all required fields including backup email.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Quality gate: at least one proof link required
+    if (!hasProofLink()) {
+      toast({
+        title: "Proof of work required",
+        description: "Add at least one of: GitHub, LinkedIn, or a live project/website link. This keeps the platform high-signal.",
         variant: "destructive",
       });
       return;
@@ -95,19 +113,25 @@ const AddProfile = () => {
       contact,
       contactType,
       backupEmail,
+      // Store proof links in tagline extension or existing fields if schema allows.
+      // For now we append them into projectDescription / preferredProjectType as a simple approach
+      // until the database schema is extended.
       projectName: profileType === 'founder' ? projectName : undefined,
-      projectDescription: profileType === 'founder' ? projectDescription : undefined,
+      projectDescription: profileType === 'founder' 
+        ? `${projectDescription}\n\nLinks: ${[github && `GitHub: ${github}`, linkedin && `LinkedIn: ${linkedin}`, website && `Website: ${website}`].filter(Boolean).join(' | ')}`
+        : undefined,
       hiringType: profileType === 'founder' ? hiringType : undefined,
       skillsNeeded: profileType === 'founder' ? developerNeeds.split(',').map(s => s.trim()).filter(Boolean) : undefined,
       skills: profileType === 'developer' ? skills.split(',').map(s => s.trim()).filter(Boolean) : undefined,
-      preferredProjectType: profileType === 'developer' ? preferredProjectType : undefined,
+      preferredProjectType: profileType === 'developer' 
+        ? `${preferredProjectType} | Links: ${[github && `GitHub: ${github}`, linkedin && `LinkedIn: ${linkedin}`, website && `Website: ${website}`].filter(Boolean).join(' | ')}`
+        : undefined,
       isHiring: profileType === 'founder' ? isHiring : false,
     });
 
     setIsSubmitting(false);
 
     if (newProfile) {
-      // Track add profile completed for analytics
       trackAddProfileCompleted(profileType);
       toast({
         title: "Profile created!",
@@ -130,7 +154,7 @@ const AddProfile = () => {
       <main className="container py-8 max-w-2xl">
         <h1 className="font-heading text-3xl text-foreground mb-2">Create your profile</h1>
         <p className="text-muted-foreground mb-8">
-          Join CoFoundr and connect with founders or developers
+          High-signal only. We ask for proof of work so serious builders can find each other.
         </p>
 
         {/* Profile Type Selection */}
@@ -145,7 +169,7 @@ const AddProfile = () => {
               </div>
               <h3 className="font-heading text-xl text-foreground mb-2">I'm a Founder</h3>
               <p className="text-sm text-muted-foreground">
-                Looking for a technical co-founder or developer to join my startup
+                Looking for a technical co-founder or early engineer who actually ships
               </p>
             </button>
 
@@ -158,7 +182,7 @@ const AddProfile = () => {
               </div>
               <h3 className="font-heading text-xl text-foreground mb-2">I'm a Developer</h3>
               <p className="text-sm text-muted-foreground">
-                Looking for an exciting startup opportunity as a co-founder or early engineer
+                Looking for an ambitious project to join as co-founder or founding engineer
               </p>
             </button>
           </div>
@@ -248,6 +272,53 @@ const AddProfile = () => {
                 placeholder="Ex-Google PM building the future of AI"
                 required
               />
+            </div>
+
+            {/* Proof of Work — Quality Gate */}
+            <div className="space-y-3 p-4 rounded-xl bg-secondary/40 border border-border/50">
+              <div className="flex items-center gap-2">
+                <Label className="text-base">Proof of Work *</Label>
+                <span className="text-xs text-muted-foreground">(at least one required)</span>
+              </div>
+              <p className="text-xs text-muted-foreground -mt-1">
+                This keeps Co Finder high-signal. Profiles without any proof are not accepted.
+              </p>
+
+              <div className="space-y-2">
+                <Label htmlFor="github" className="flex items-center gap-2 text-sm">
+                  <Github className="h-4 w-4" /> GitHub
+                </Label>
+                <Input
+                  id="github"
+                  value={github}
+                  onChange={(e) => setGithub(e.target.value)}
+                  placeholder="https://github.com/username"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="linkedin" className="flex items-center gap-2 text-sm">
+                  <Linkedin className="h-4 w-4" /> LinkedIn
+                </Label>
+                <Input
+                  id="linkedin"
+                  value={linkedin}
+                  onChange={(e) => setLinkedin(e.target.value)}
+                  placeholder="https://linkedin.com/in/username"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="website" className="flex items-center gap-2 text-sm">
+                  <Globe className="h-4 w-4" /> Website / Live Project
+                </Label>
+                <Input
+                  id="website"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  placeholder="https://yourproject.com"
+                />
+              </div>
             </div>
 
             {/* Founder specific fields */}
