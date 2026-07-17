@@ -1,15 +1,30 @@
 import { Link } from 'react-router-dom';
 import { Profile } from '@/lib/database';
 import { HiringBadge } from './HiringBadge';
-import { Eye, Heart, ChevronRight } from 'lucide-react';
+import { Eye, Heart, ChevronRight, ShieldCheck } from 'lucide-react';
 
 interface ProfileCardProps {
   profile: Profile;
   variant?: 'default' | 'compact';
 }
 
+/** Simple heuristic: if description/tagline contains github/linkedin/http → has proof */
+function hasProofOfWork(profile: Profile): boolean {
+  const text = `${profile.projectDescription || ''} ${profile.preferredProjectType || ''} ${profile.tagline || ''}`.toLowerCase();
+  return (
+    text.includes('github.com') ||
+    text.includes('linkedin.com') ||
+    text.includes('http://') ||
+    text.includes('https://') ||
+    text.includes('github:') ||
+    text.includes('linkedin:') ||
+    text.includes('website:')
+  );
+}
+
 export function ProfileCard({ profile, variant = 'default' }: ProfileCardProps) {
   const isFounder = profile.type === 'founder';
+  const isVerified = hasProofOfWork(profile);
 
   if (variant === 'compact') {
     return (
@@ -30,10 +45,18 @@ export function ProfileCard({ profile, variant = 'default' }: ProfileCardProps) 
               alt={profile.name}
               className="w-12 h-12 rounded-lg object-cover bg-muted"
             />
+            {isVerified && (
+              <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-card flex items-center justify-center">
+                <ShieldCheck className="h-2.5 w-2.5 text-white" />
+              </span>
+            )}
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-medium text-foreground truncate">
+            <h3 className="font-medium text-foreground truncate flex items-center gap-1">
               {isFounder ? profile.projectName : profile.name}
+              {isVerified && (
+                <ShieldCheck className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+              )}
             </h3>
             <p className="text-xs text-muted-foreground truncate">
               {profile.category.charAt(0).toUpperCase() + profile.category.slice(1)}
@@ -79,7 +102,15 @@ export function ProfileCard({ profile, variant = 'default' }: ProfileCardProps) 
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2 mb-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="font-medium text-foreground">{profile.name}</h3>
+              <h3 className="font-medium text-foreground flex items-center gap-1.5">
+                {profile.name}
+                {isVerified && (
+                  <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-emerald-600 bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                    <ShieldCheck className="h-3 w-3" />
+                    Verified
+                  </span>
+                )}
+              </h3>
               {isFounder && <HiringBadge variant="hiring" />}
               {profile.joinedAt === 'Today' && <HiringBadge variant="new" />}
             </div>
