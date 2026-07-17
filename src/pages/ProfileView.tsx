@@ -23,7 +23,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { 
   Eye, Heart, ArrowLeft, Mail, Twitter, Linkedin, 
-  ExternalLink, Sparkles, Calendar, Clock, Edit, Plus, CheckCircle, Briefcase
+  ExternalLink, Sparkles, Calendar, Clock, Edit, Plus, CheckCircle, Briefcase,
+  Github, Globe, ShieldCheck
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -40,8 +41,7 @@ const ProfileView = () => {
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   
-  // Verification state
-  const [isVerified, setIsVerified] = useState(false);
+  const [isVerifiedOwner, setIsVerifiedOwner] = useState(false);
   const [verifiedEmail, setVerifiedEmail] = useState('');
   const [verifyEmail, setVerifyEmail] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
@@ -61,7 +61,6 @@ const ProfileView = () => {
 
       if (profileData) {
         incrementProfileViews(id);
-        // Track profile view for analytics
         trackProfileView(id, profileData.type as 'founder' | 'developer');
       }
     }
@@ -74,7 +73,6 @@ const ProfileView = () => {
       await incrementProfileInterests(id);
       setHasShownInterest(true);
       setShowContact(true);
-      // Track interested click for analytics
       trackInterestedClick(id);
       toast({
         title: "Interest registered!",
@@ -97,7 +95,7 @@ const ProfileView = () => {
     setIsVerifying(false);
 
     if (result.verified) {
-      setIsVerified(true);
+      setIsVerifiedOwner(true);
       setVerifiedEmail(verifyEmail.trim());
       toast({
         title: "Ownership verified!",
@@ -127,10 +125,7 @@ const ProfileView = () => {
       setProjects(prev => prev.map(p => 
         p.id === projectId ? { ...p, isHiring: false, isFeatured: false } : p
       ));
-      // Track hiring completed for analytics
-      if (id) {
-        trackHiringCompleted(id, projectId);
-      }
+      if (id) trackHiringCompleted(id, projectId);
       toast({
         title: "Hiring completed!",
         description: "Your project has been marked as completed.",
@@ -179,6 +174,7 @@ const ProfileView = () => {
   }
 
   const isFounder = profile.type === 'founder';
+  const hasProof = Boolean(profile.github || profile.linkedin || profile.website || profile.isVerified);
 
   const getContactIcon = () => {
     switch (profile.contactType) {
@@ -231,6 +227,12 @@ const ProfileView = () => {
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center gap-2 mb-2">
                     <h1 className="font-heading text-2xl text-foreground">{profile.name}</h1>
+                    {profile.isVerified && (
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                        <ShieldCheck className="h-3.5 w-3.5" />
+                        Verified Builder
+                      </span>
+                    )}
                     {profile.isHiring && <HiringBadge variant="hiring" />}
                     {profile.isFeatured && <HiringBadge variant="new" />}
                   </div>
@@ -258,6 +260,54 @@ const ProfileView = () => {
                 </div>
               </div>
             </div>
+
+            {/* Proof of Work */}
+            {hasProof && (
+              <div className="p-6 rounded-xl bg-card border border-border/50">
+                <div className="flex items-center gap-2 mb-4">
+                  <ShieldCheck className="h-5 w-5 text-emerald-500" />
+                  <h2 className="font-heading text-xl text-foreground">Proof of Work</h2>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  {profile.github && (
+                    <a
+                      href={profile.github.startsWith('http') ? profile.github : `https://${profile.github}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-secondary hover:bg-secondary/80 border border-border/50 transition-colors text-sm font-medium"
+                    >
+                      <Github className="h-4 w-4" />
+                      GitHub
+                      <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+                    </a>
+                  )}
+                  {profile.linkedin && (
+                    <a
+                      href={profile.linkedin.startsWith('http') ? profile.linkedin : `https://${profile.linkedin}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-secondary hover:bg-secondary/80 border border-border/50 transition-colors text-sm font-medium"
+                    >
+                      <Linkedin className="h-4 w-4" />
+                      LinkedIn
+                      <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+                    </a>
+                  )}
+                  {profile.website && (
+                    <a
+                      href={profile.website.startsWith('http') ? profile.website : `https://${profile.website}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-secondary hover:bg-secondary/80 border border-border/50 transition-colors text-sm font-medium"
+                    >
+                      <Globe className="h-4 w-4" />
+                      Website / Project
+                      <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Project Details (Founders) */}
             {isFounder && profile.projectName && (
@@ -321,8 +371,7 @@ const ProfileView = () => {
                             <span className="font-medium">Looking for:</span> {project.lookingFor}
                           </p>
                           
-                          {/* Owner actions */}
-                          {isVerified && (
+                          {isVerifiedOwner && (
                             <div className="flex gap-2 mt-3">
                               <Button 
                                 variant="outline" 
@@ -417,11 +466,7 @@ const ProfileView = () => {
                       </a>
                     </div>
                     
-                    <Button
-                      asChild
-                      className="w-full gap-2"
-                      size="lg"
-                    >
+                    <Button asChild className="w-full gap-2" size="lg">
                       <a href={getContactLink()} target="_blank" rel="noopener noreferrer">
                         {getContactIcon()}
                         Contact {profile.name.split(' ')[0]}
@@ -448,7 +493,7 @@ const ProfileView = () => {
               <div className="p-6 rounded-xl bg-card border border-border/50">
                 <h3 className="font-heading text-lg text-foreground mb-2">Your profile?</h3>
                 
-                {!isVerified ? (
+                {!isVerifiedOwner ? (
                   <div className="space-y-3">
                     <p className="text-sm text-muted-foreground">
                       Verify with your backup email to make changes
@@ -513,7 +558,7 @@ const ProfileView = () => {
         onProfileUpdated={handleProfileUpdated}
       />
 
-      {isVerified && (
+      {isVerifiedOwner && (
         <ListProjectModal
           profileId={profile.id}
           verifiedEmail={verifiedEmail}
