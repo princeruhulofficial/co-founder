@@ -14,15 +14,15 @@ export function Hero() {
     }
   };
 
-  const quickLinks = ['New', 'Founders', 'Developers', 'AI Startups'];
+  const quickLinks = ['Founders', 'Developers', 'AI Startups', 'New'];
 
   return (
     <section className="pt-12 pb-8 text-center">
       <h1 className="font-heading text-3xl sm:text-4xl md:text-5xl text-foreground mb-3 leading-tight">
-        List your project. Attract the right co-founder.
+        The highest-signal place to find your co-founder
       </h1>
-      <p className="text-muted-foreground/70 text-sm sm:text-base mb-6">
-        Build faster with people who actually want to build with you.
+      <p className="text-muted-foreground/70 text-sm sm:text-base mb-6 max-w-2xl mx-auto">
+        Built for serious founders and technical co-founders who actually want to ship — not just network.
       </p>
 
       <form onSubmit={handleSearch} className="max-w-xl mx-auto mb-6">
