@@ -81,7 +81,6 @@ const AddProfile = () => {
       return;
     }
 
-    // Quality gate: at least one proof link required
     if (!hasProofLink()) {
       toast({
         title: "Proof of work required",
@@ -91,7 +90,6 @@ const AddProfile = () => {
       return;
     }
 
-    // Validate email format for backup email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(backupEmail)) {
       toast({
@@ -113,20 +111,16 @@ const AddProfile = () => {
       contact,
       contactType,
       backupEmail,
-      // Store proof links in tagline extension or existing fields if schema allows.
-      // For now we append them into projectDescription / preferredProjectType as a simple approach
-      // until the database schema is extended.
       projectName: profileType === 'founder' ? projectName : undefined,
-      projectDescription: profileType === 'founder' 
-        ? `${projectDescription}\n\nLinks: ${[github && `GitHub: ${github}`, linkedin && `LinkedIn: ${linkedin}`, website && `Website: ${website}`].filter(Boolean).join(' | ')}`
-        : undefined,
+      projectDescription: profileType === 'founder' ? projectDescription : undefined,
       hiringType: profileType === 'founder' ? hiringType : undefined,
       skillsNeeded: profileType === 'founder' ? developerNeeds.split(',').map(s => s.trim()).filter(Boolean) : undefined,
       skills: profileType === 'developer' ? skills.split(',').map(s => s.trim()).filter(Boolean) : undefined,
-      preferredProjectType: profileType === 'developer' 
-        ? `${preferredProjectType} | Links: ${[github && `GitHub: ${github}`, linkedin && `LinkedIn: ${linkedin}`, website && `Website: ${website}`].filter(Boolean).join(' | ')}`
-        : undefined,
+      preferredProjectType: profileType === 'developer' ? preferredProjectType : undefined,
       isHiring: profileType === 'founder' ? isHiring : false,
+      github: github.trim() || undefined,
+      linkedin: linkedin.trim() || undefined,
+      website: website.trim() || undefined,
     });
 
     setIsSubmitting(false);
@@ -157,7 +151,6 @@ const AddProfile = () => {
           High-signal only. We ask for proof of work so serious builders can find each other.
         </p>
 
-        {/* Profile Type Selection */}
         {!profileType ? (
           <div className="grid sm:grid-cols-2 gap-4">
             <button
@@ -196,17 +189,12 @@ const AddProfile = () => {
               ← Change profile type
             </button>
 
-            {/* Avatar Upload */}
             <div className="space-y-2">
               <Label>Profile Photo</Label>
               <div className="flex items-center gap-4">
                 {avatar ? (
                   <div className="relative">
-                    <img
-                      src={avatar}
-                      alt="Preview"
-                      className="w-20 h-20 rounded-xl object-cover"
-                    />
+                    <img src={avatar} alt="Preview" className="w-20 h-20 rounded-xl object-cover" />
                     <button
                       type="button"
                       onClick={() => setAvatar('')}
@@ -219,12 +207,7 @@ const AddProfile = () => {
                   <label className="w-20 h-20 rounded-xl bg-secondary border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 transition-colors">
                     <Upload className="h-6 w-6 text-muted-foreground mb-1" />
                     <span className="text-xs text-muted-foreground">Upload</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="hidden"
-                    />
+                    <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
                   </label>
                 )}
                 <div className="text-sm text-muted-foreground">
@@ -234,29 +217,18 @@ const AddProfile = () => {
               </div>
             </div>
 
-            {/* Basic Info */}
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Full Name *</Label>
-                <Input
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="John Doe"
-                  required
-                />
+                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="John Doe" required />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="category">Category *</Label>
                 <Select value={category} onValueChange={setCategory}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {categories.map(cat => (
-                      <SelectItem key={cat.id} value={cat.id}>
-                        {cat.icon} {cat.name}
-                      </SelectItem>
+                      <SelectItem key={cat.id} value={cat.id}>{cat.icon} {cat.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -265,13 +237,7 @@ const AddProfile = () => {
 
             <div className="space-y-2">
               <Label htmlFor="tagline">Tagline *</Label>
-              <Input
-                id="tagline"
-                value={tagline}
-                onChange={(e) => setTagline(e.target.value)}
-                placeholder="Ex-Google PM building the future of AI"
-                required
-              />
+              <Input id="tagline" value={tagline} onChange={(e) => setTagline(e.target.value)} placeholder="Ex-Google PM building the future of AI" required />
             </div>
 
             {/* Proof of Work — Quality Gate */}
@@ -288,69 +254,38 @@ const AddProfile = () => {
                 <Label htmlFor="github" className="flex items-center gap-2 text-sm">
                   <Github className="h-4 w-4" /> GitHub
                 </Label>
-                <Input
-                  id="github"
-                  value={github}
-                  onChange={(e) => setGithub(e.target.value)}
-                  placeholder="https://github.com/username"
-                />
+                <Input id="github" value={github} onChange={(e) => setGithub(e.target.value)} placeholder="https://github.com/username" />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="linkedin" className="flex items-center gap-2 text-sm">
                   <Linkedin className="h-4 w-4" /> LinkedIn
                 </Label>
-                <Input
-                  id="linkedin"
-                  value={linkedin}
-                  onChange={(e) => setLinkedin(e.target.value)}
-                  placeholder="https://linkedin.com/in/username"
-                />
+                <Input id="linkedin" value={linkedin} onChange={(e) => setLinkedin(e.target.value)} placeholder="https://linkedin.com/in/username" />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="website" className="flex items-center gap-2 text-sm">
                   <Globe className="h-4 w-4" /> Website / Live Project
                 </Label>
-                <Input
-                  id="website"
-                  value={website}
-                  onChange={(e) => setWebsite(e.target.value)}
-                  placeholder="https://yourproject.com"
-                />
+                <Input id="website" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://yourproject.com" />
               </div>
             </div>
 
-            {/* Founder specific fields */}
             {profileType === 'founder' && (
               <>
                 <div className="space-y-2">
                   <Label htmlFor="projectName">Project Name</Label>
-                  <Input
-                    id="projectName"
-                    value={projectName}
-                    onChange={(e) => setProjectName(e.target.value)}
-                    placeholder="MyStartup"
-                  />
+                  <Input id="projectName" value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="MyStartup" />
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="projectDescription">Project Description</Label>
-                  <Textarea
-                    id="projectDescription"
-                    value={projectDescription}
-                    onChange={(e) => setProjectDescription(e.target.value)}
-                    placeholder="Describe your project in detail..."
-                    rows={4}
-                  />
+                  <Textarea id="projectDescription" value={projectDescription} onChange={(e) => setProjectDescription(e.target.value)} placeholder="Describe your project in detail..." rows={4} />
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="hiringType">Hiring Type</Label>
                   <Select value={hiringType} onValueChange={setHiringType}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Technical Co-founder">Technical Co-founder</SelectItem>
                       <SelectItem value="CTO">CTO</SelectItem>
@@ -359,67 +294,38 @@ const AddProfile = () => {
                     </SelectContent>
                   </Select>
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="developerNeeds">Skills Needed (comma separated)</Label>
-                  <Input
-                    id="developerNeeds"
-                    value={developerNeeds}
-                    onChange={(e) => setDeveloperNeeds(e.target.value)}
-                    placeholder="React, Node.js, PostgreSQL, AWS"
-                  />
+                  <Input id="developerNeeds" value={developerNeeds} onChange={(e) => setDeveloperNeeds(e.target.value)} placeholder="React, Node.js, PostgreSQL, AWS" />
                 </div>
-
                 <div className="flex items-center justify-between p-4 rounded-lg bg-secondary/50">
                   <div>
                     <Label htmlFor="isHiring" className="text-base">Hiring Co-founder</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Get featured in "Recently hiring" section
-                    </p>
+                    <p className="text-sm text-muted-foreground">Get featured in "Recently hiring" section</p>
                   </div>
-                  <Switch
-                    id="isHiring"
-                    checked={isHiring}
-                    onCheckedChange={setIsHiring}
-                  />
+                  <Switch id="isHiring" checked={isHiring} onCheckedChange={setIsHiring} />
                 </div>
               </>
             )}
 
-            {/* Developer specific fields */}
             {profileType === 'developer' && (
               <>
                 <div className="space-y-2">
                   <Label htmlFor="skills">Your Skills (comma separated) *</Label>
-                  <Input
-                    id="skills"
-                    value={skills}
-                    onChange={(e) => setSkills(e.target.value)}
-                    placeholder="React, TypeScript, Node.js, PostgreSQL"
-                    required
-                  />
+                  <Input id="skills" value={skills} onChange={(e) => setSkills(e.target.value)} placeholder="React, TypeScript, Node.js, PostgreSQL" required />
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="preferredProjectType">Preferred Project Types</Label>
-                  <Input
-                    id="preferredProjectType"
-                    value={preferredProjectType}
-                    onChange={(e) => setPreferredProjectType(e.target.value)}
-                    placeholder="AI/ML, Fintech, Developer Tools"
-                  />
+                  <Input id="preferredProjectType" value={preferredProjectType} onChange={(e) => setPreferredProjectType(e.target.value)} placeholder="AI/ML, Fintech, Developer Tools" />
                 </div>
               </>
             )}
 
-            {/* Contact Info */}
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="contactType">Contact Type *</Label>
                 <Select value={contactType} onValueChange={(v) => setContactType(v as 'email' | 'twitter' | 'linkedin')}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="email">Email</SelectItem>
                     <SelectItem value="twitter">Twitter/X</SelectItem>
@@ -443,20 +349,12 @@ const AddProfile = () => {
               </div>
             </div>
 
-            {/* Backup Email */}
             <div className="space-y-2">
               <Label htmlFor="backupEmail" className="flex items-center gap-2">
                 Backup Email (Private) *
                 <Info className="h-4 w-4 text-muted-foreground" />
               </Label>
-              <Input
-                id="backupEmail"
-                type="email"
-                value={backupEmail}
-                onChange={(e) => setBackupEmail(e.target.value)}
-                placeholder="your-backup@email.com"
-                required
-              />
+              <Input id="backupEmail" type="email" value={backupEmail} onChange={(e) => setBackupEmail(e.target.value)} placeholder="your-backup@email.com" required />
               <p className="text-xs text-muted-foreground">
                 This email is private and never shown publicly. Use it to verify and edit your profile later.
               </p>
@@ -464,10 +362,7 @@ const AddProfile = () => {
 
             <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating...
-                </>
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Creating...</>
               ) : (
                 'Create Profile'
               )}
