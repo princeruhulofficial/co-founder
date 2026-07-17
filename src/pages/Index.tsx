@@ -38,13 +38,13 @@ const Index = () => {
         <Hero />
         
         <HorizontalScroller
-          title="Recently hiring co-founders"
+          title="Founders actively hiring co-founders"
           profiles={hiringCoFounders}
           linkTo="/profiles?type=founder"
         />
 
         <HorizontalScroller
-          title="Top developers this week"
+          title="Top developers looking to build"
           profiles={topDevelopers}
           linkTo="/profiles?type=developer"
         />
@@ -66,10 +66,11 @@ const Index = () => {
             transition={{ duration: 0.5, delay: 0.1 }}
           >
             <h2 className="text-3xl md:text-4xl font-heading font-bold text-foreground mb-4">
-              Are You Ready to Find Your Co-Founder?
+              Choosing a co-founder is one of the highest-leverage decisions you will make
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Test your founder instincts with this quick interactive game. Learn what matters most when choosing the right partner to build with.
+              Most partnerships fail because of misaligned values, not lack of skill.  
+              Take this short game to stress-test what actually matters.
             </p>
           </motion.div>
           <motion.div
