@@ -21,6 +21,12 @@ export interface DbProfile {
   interests: number;
   created_at: string;
   updated_at: string;
+  // Proof of work fields (after migration)
+  github?: string | null;
+  linkedin?: string | null;
+  website?: string | null;
+  is_verified?: boolean | null;
+  reputation_score?: number | null;
 }
 
 export interface DbProject {
@@ -73,6 +79,12 @@ export interface Profile {
   category: string;
   isHiring?: boolean;
   isFeatured?: boolean;
+  // Proof of work
+  github?: string;
+  linkedin?: string;
+  website?: string;
+  isVerified?: boolean;
+  reputationScore?: number;
 }
 
 function dbProjectToProject(dbProject: DbProject): Project {
@@ -108,7 +120,37 @@ function getRelativeTime(dateStr: string): string {
   return `${Math.floor(diffDays / 7)} weeks ago`;
 }
 
+/** Extract links from free-text fields (fallback before migration is applied) */
+function extractLinksFromText(text: string | null | undefined) {
+  if (!text) return { github: undefined, linkedin: undefined, website: undefined };
+  const githubMatch = text.match(/github\.com\/[^\s|]+/i) || text.match(/GitHub:\s*(https?:\/\/[^\s|]+)/i);
+  const linkedinMatch = text.match(/linkedin\.com\/in\/[^\s|]+/i) || text.match(/LinkedIn:\s*(https?:\/\/[^\s|]+)/i);
+  const websiteMatch = text.match(/Website:\s*(https?:\/\/[^\s|]+)/i);
+
+  const normalize = (m: RegExpMatchArray | null) => {
+    if (!m) return undefined;
+    const raw = m[1] || m[0];
+    return raw.startsWith('http') ? raw : `https://${raw}`;
+  };
+
+  return {
+    github: normalize(githubMatch),
+    linkedin: normalize(linkedinMatch),
+    website: normalize(websiteMatch),
+  };
+}
+
 export function dbProfileToProfile(dbProfile: DbProfile): Profile {
+  // Prefer dedicated columns; fall back to parsing description text
+  const extracted = extractLinksFromText(
+    `${dbProfile.project_description || ''} ${dbProfile.preferred_project_type || ''}`
+  );
+
+  const github = dbProfile.github || extracted.github;
+  const linkedin = dbProfile.linkedin || extracted.linkedin;
+  const website = dbProfile.website || extracted.website;
+  const hasProof = Boolean(github || linkedin || website);
+
   return {
     id: dbProfile.id,
     type: dbProfile.type,
@@ -134,20 +176,37 @@ export function dbProfileToProfile(dbProfile: DbProfile): Profile {
     category: dbProfile.category,
     isHiring: dbProfile.is_hiring,
     isFeatured: dbProfile.is_featured,
+    github,
+    linkedin,
+    website,
+    isVerified: dbProfile.is_verified ?? hasProof,
+    reputationScore: dbProfile.reputation_score ?? undefined,
   };
 }
+
+const PROFILE_SELECT = `id, name, tagline, avatar, type, category, contact, contact_type, project_name, project_description, hiring_type, skills_needed, skills, preferred_project_type, is_hiring, is_featured, views, interests, created_at, updated_at, github, linkedin, website, is_verified, reputation_score`;
 
 // Fetch all profiles (excluding backup_email)
 export async function fetchProfiles(): Promise<Profile[]> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, name, tagline, avatar, type, category, contact, contact_type, project_name, project_description, hiring_type, skills_needed, skills, preferred_project_type, is_hiring, is_featured, views, interests, created_at, updated_at')
+    .select(PROFILE_SELECT)
     .order('is_featured', { ascending: false })
     .order('created_at', { ascending: false });
 
   if (error) {
-    console.error('Error fetching profiles:', error);
-    return [];
+    // Fallback if new columns don't exist yet
+    console.warn('Error fetching profiles (trying without new columns):', error.message);
+    const { data: fallbackData, error: fallbackError } = await supabase
+      .from('profiles')
+      .select('id, name, tagline, avatar, type, category, contact, contact_type, project_name, project_description, hiring_type, skills_needed, skills, preferred_project_type, is_hiring, is_featured, views, interests, created_at, updated_at')
+      .order('is_featured', { ascending: false })
+      .order('created_at', { ascending: false });
+    if (fallbackError) {
+      console.error('Error fetching profiles:', fallbackError);
+      return [];
+    }
+    return (fallbackData || []).map(dbProfileToProfile);
   }
 
   return (data || []).map(dbProfileToProfile);
@@ -157,14 +216,19 @@ export async function fetchProfiles(): Promise<Profile[]> {
 export async function fetchFeaturedProfiles(): Promise<Profile[]> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, name, tagline, avatar, type, category, contact, contact_type, project_name, project_description, hiring_type, skills_needed, skills, preferred_project_type, is_hiring, is_featured, views, interests, created_at, updated_at')
+    .select(PROFILE_SELECT)
     .eq('is_featured', true)
     .order('created_at', { ascending: false })
     .limit(10);
 
   if (error) {
-    console.error('Error fetching featured profiles:', error);
-    return [];
+    const { data: fallbackData } = await supabase
+      .from('profiles')
+      .select('id, name, tagline, avatar, type, category, contact, contact_type, project_name, project_description, hiring_type, skills_needed, skills, preferred_project_type, is_hiring, is_featured, views, interests, created_at, updated_at')
+      .eq('is_featured', true)
+      .order('created_at', { ascending: false })
+      .limit(10);
+    return (fallbackData || []).map(dbProfileToProfile);
   }
 
   return (data || []).map(dbProfileToProfile);
@@ -174,13 +238,22 @@ export async function fetchFeaturedProfiles(): Promise<Profile[]> {
 export async function fetchProfileById(id: string): Promise<Profile | null> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, name, tagline, avatar, type, category, contact, contact_type, project_name, project_description, hiring_type, skills_needed, skills, preferred_project_type, is_hiring, is_featured, views, interests, created_at, updated_at')
+    .select(PROFILE_SELECT)
     .eq('id', id)
     .maybeSingle();
 
   if (error || !data) {
-    console.error('Error fetching profile:', error);
-    return null;
+    // Fallback
+    const { data: fallbackData, error: fallbackError } = await supabase
+      .from('profiles')
+      .select('id, name, tagline, avatar, type, category, contact, contact_type, project_name, project_description, hiring_type, skills_needed, skills, preferred_project_type, is_hiring, is_featured, views, interests, created_at, updated_at')
+      .eq('id', id)
+      .maybeSingle();
+    if (fallbackError || !fallbackData) {
+      console.error('Error fetching profile:', error || fallbackError);
+      return null;
+    }
+    return dbProfileToProfile(fallbackData as DbProfile);
   }
 
   return dbProfileToProfile(data as DbProfile);
@@ -203,32 +276,70 @@ export async function createProfile(profileData: {
   skills?: string[];
   preferredProjectType?: string;
   isHiring?: boolean;
+  github?: string;
+  linkedin?: string;
+  website?: string;
 }): Promise<Profile | null> {
+  const hasProof = Boolean(profileData.github || profileData.linkedin || profileData.website);
+
+  const insertPayload: Record<string, unknown> = {
+    name: profileData.name,
+    tagline: profileData.tagline,
+    avatar: profileData.avatar || null,
+    type: profileData.type,
+    category: profileData.category,
+    contact: profileData.contact,
+    contact_type: profileData.contactType,
+    backup_email: profileData.backupEmail,
+    project_name: profileData.projectName || null,
+    project_description: profileData.projectDescription || null,
+    hiring_type: profileData.hiringType || null,
+    skills_needed: profileData.skillsNeeded || [],
+    skills: profileData.skills || [],
+    preferred_project_type: profileData.preferredProjectType || null,
+    is_hiring: profileData.isHiring || false,
+    github: profileData.github || null,
+    linkedin: profileData.linkedin || null,
+    website: profileData.website || null,
+    is_verified: hasProof,
+  };
+
   const { data, error } = await supabase
     .from('profiles')
-    .insert({
-      name: profileData.name,
-      tagline: profileData.tagline,
-      avatar: profileData.avatar || null,
-      type: profileData.type,
-      category: profileData.category,
-      contact: profileData.contact,
-      contact_type: profileData.contactType,
-      backup_email: profileData.backupEmail,
-      project_name: profileData.projectName || null,
-      project_description: profileData.projectDescription || null,
-      hiring_type: profileData.hiringType || null,
-      skills_needed: profileData.skillsNeeded || [],
-      skills: profileData.skills || [],
-      preferred_project_type: profileData.preferredProjectType || null,
-      is_hiring: profileData.isHiring || false,
-    })
-    .select('id, name, tagline, avatar, type, category, contact, contact_type, project_name, project_description, hiring_type, skills_needed, skills, preferred_project_type, is_hiring, is_featured, views, interests, created_at, updated_at')
+    .insert(insertPayload)
+    .select(PROFILE_SELECT)
     .single();
 
   if (error) {
-    console.error('Error creating profile:', error);
-    return null;
+    // Fallback insert without new columns if migration not applied yet
+    console.warn('Insert with new columns failed, trying fallback:', error.message);
+    const { data: fallbackData, error: fallbackError } = await supabase
+      .from('profiles')
+      .insert({
+        name: profileData.name,
+        tagline: profileData.tagline,
+        avatar: profileData.avatar || null,
+        type: profileData.type,
+        category: profileData.category,
+        contact: profileData.contact,
+        contact_type: profileData.contactType,
+        backup_email: profileData.backupEmail,
+        project_name: profileData.projectName || null,
+        project_description: profileData.projectDescription || null,
+        hiring_type: profileData.hiringType || null,
+        skills_needed: profileData.skillsNeeded || [],
+        skills: profileData.skills || [],
+        preferred_project_type: profileData.preferredProjectType || null,
+        is_hiring: profileData.isHiring || false,
+      })
+      .select('id, name, tagline, avatar, type, category, contact, contact_type, project_name, project_description, hiring_type, skills_needed, skills, preferred_project_type, is_hiring, is_featured, views, interests, created_at, updated_at')
+      .single();
+
+    if (fallbackError) {
+      console.error('Error creating profile:', fallbackError);
+      return null;
+    }
+    return dbProfileToProfile(fallbackData as DbProfile);
   }
 
   return dbProfileToProfile(data as DbProfile);
