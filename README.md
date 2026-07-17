@@ -1,73 +1,104 @@
-# Welcome to your Lovable project
+# Co Finder
 
-## Project info
+**The co-founder matching platform for serious builders.**
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+Find the right technical co-founder. List your project. Attract people who actually want to build with you.
 
-## How can I edit this code?
+[Live Demo](https://founder-connect-nine.vercel.app) · Built by [Prince Ruhul](https://github.com/princeruhulofficial)
 
-There are several ways of editing your application.
+---
 
-**Use Lovable**
+### What is Co Finder?
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+Most founder matching platforms are noisy, low-signal, and full of people who just want to "network".  
+Co Finder is built for **people who ship**.
 
-Changes made via Lovable will be committed automatically to this repo.
+- Founders looking for technical co-founders
+- Developers looking for ambitious projects to join as co-founder
+- Early-stage teams that need the right partner, not just freelancers
 
-**Use your preferred IDE**
+---
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Core Features
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+| Feature | Description |
+|---------|-------------|
+| **Profile System** | Founders & Developers can create rich profiles |
+| **Project Listing** | List what you're building and what kind of co-founder you need |
+| **Jobs Board** | Post and browse co-founder / early team opportunities |
+| **Feedback Wall** | Get honest product feedback from other builders |
+| **Leaderboard** | See top active founders and developers |
+| **Co-Founder Game** | Interactive quiz to test founder instincts |
+| **Search & Filters** | Find people by skills, type, and intent |
 
-Follow these steps:
+---
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Tech Stack
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+- **Frontend**: React 18 + TypeScript + Vite
+- **UI**: shadcn/ui + Tailwind CSS + Framer Motion
+- **Backend**: Supabase (Auth + Database + Edge Functions)
+- **Deployment**: Vercel
 
-# Step 3: Install the necessary dependencies.
-npm i
+---
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+### Getting Started
+
+```bash
+git clone https://github.com/princeruhulofficial/co-founder.git
+cd co-founder
+
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Open [http://localhost:5173](http://localhost:5173)
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+> You will need Supabase environment variables to connect to the backend.
 
-**Use GitHub Codespaces**
+---
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Project Structure
 
-## What technologies are used for this project?
+```
+src/
+├── components/     # UI components (Header, Hero, Cards, Modals...)
+├── pages/          # Route pages (Index, Profiles, Jobs, Feedback...)
+├── lib/            # Database helpers, analytics, data
+├── integrations/   # Supabase client & types
+└── hooks/          # Custom React hooks
+```
 
-This project is built with:
+---
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Vision
 
-## How can I deploy this project?
+Co Finder is not just another directory.  
+The long-term goal is to become the **highest-signal place** for ambitious founders and technical co-founders to find each other — especially from emerging markets.
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+Built with the same philosophy as [Prevalid](https://www.prevalid.net):  
+**Infrastructure over noise. Real builders over pretenders.**
 
-## Can I connect a custom domain to my Lovable project?
+---
 
-Yes, you can!
+### Roadmap (High Level)
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+- [ ] Better matching / recommendation engine
+- [ ] Verified profiles & reputation system
+- [ ] Direct messaging between interested parties
+- [ ] AI-assisted profile & project improvement
+- [ ] Stronger Bangladesh / South Asia focus + global reach
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+---
+
+### License
+
+Private / All rights reserved for now.
+
+---
+
+<div align="center">
+  <strong>Built by Prince Ruhul</strong><br>
+  Founder of <a href="https://www.prevalid.net">Prevalid</a> — Making AI Accountable<br>
+  From Bangladesh, building for the world.
+</div>
